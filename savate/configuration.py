@@ -150,6 +150,7 @@ class ServerConfiguration(object):
         global_burst_size = conf.get('burst_size', None)
         global_on_demand = conf.get('on_demand', False)
         global_keepalive = conf.get('keepalive', False)
+        global_max_queue_size = conf.get('max_queue_size')
 
         net_resolve_all = conf.get('net_resolve_all', False)
 
@@ -171,6 +172,7 @@ class ServerConfiguration(object):
                 mount_conf.get('burst_size', global_burst_size))
             mount_on_demand = mount_conf.get('on_demand', global_on_demand)
             mount_keep_alive = mount_conf.get('keepalive', global_keepalive)
+            mount_max_queue_size = mount_conf.get('max_queue_size', global_max_queue_size)
             path = mount_conf['path']
             for source_url in mount_conf['source_urls']:
                 parsed_url = urlparse.urlparse(source_url)
@@ -194,14 +196,16 @@ class ServerConfiguration(object):
                                 server.add_relay(source_url, path, address_info,
                                                  mount_burst_size,
                                                  mount_on_demand,
-                                                 mount_keep_alive)
+                                                 mount_keep_alive,
+                                                 mount_max_queue_size)
                     else:
                         if (source_url, path, None) not in relay_index:
                             server.logger.info('Trying to relay %s', source_url)
                             server.add_relay(source_url, path,
                                              burst_size=mount_burst_size,
                                              on_demand=mount_on_demand,
-                                             keepalive=mount_keep_alive)
+                                             keepalive=mount_keep_alive,
+                                             max_queue_size=mount_max_queue_size)
 
     def configure_authorization(self):
         conf = self.config_dict
