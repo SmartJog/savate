@@ -75,6 +75,9 @@ this limit, savate will send a 503 HTTP response to a new client. Note
 that this is only used for streaming clients; sources and status pages
 clients are not affected by this limit. (global)
 
+`max_queue_size` The maximum queue size for client buffers in bytes. If a
+client isn't downloading data fast enough, the client will be disconnected when
+that size is reached. Default is 24MB. (global, `mounts`)
 
 Authors
 -------

@@ -95,7 +95,7 @@ class HTTPRelay(Relay):
     RESPONSE_MAX_SIZE = 4096
 
     def __init__(self, server, url, path, addr_info = None, burst_size = None,
-                 on_demand = False, keepalive = None):
+                 on_demand = False, keepalive = None, max_queue_size = None):
         Relay.__init__(self, server, url, path, addr_info, burst_size)
 
         self.on_demand = bool(on_demand)
@@ -106,6 +106,8 @@ class HTTPRelay(Relay):
         # None, note that it has nothing to do with HTTP keepalive, the name is
         # just here to confuse people
         self.keepalive = keepalive
+
+        self.max_queue_size = max_queue_size
 
         self.connect()
 
@@ -144,8 +146,8 @@ class HTTPRelay(Relay):
             self.address = self.sock.getpeername()
             # We're connected, prepare to send our request
             _req = self._build_request()
-            self.output_buffer = buffer_event.BufferOutputHandler(self.sock,
-                                                                  (_req,))
+            self.output_buffer = buffer_event.BufferOutputHandler(
+                    self.sock, (_req,), max_queue_size=self.max_queue_size)
             self.handle_event = self.handle_request
             # Immediately try to send some data
             self.handle_event(eventmask)

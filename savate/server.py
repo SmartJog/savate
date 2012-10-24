@@ -287,13 +287,14 @@ class TCPServer(looping.BaseIOEventHandler):
                              status_code)
 
     def add_relay(self, url, path, address_info = None, burst_size = None,
-                  on_demand = False, keepalive = False):
+                  on_demand = False, keepalive = False, max_queue_size = None):
         if urlparse.urlparse(url).scheme in ('udp', 'multicast'):
             tmp_relay = relay.UDPRelay(self, url, path, address_info,
                                        burst_size)
         else:
             tmp_relay = relay.HTTPRelay(self, url, path, address_info,
-                                        burst_size, on_demand, keepalive)
+                                        burst_size, on_demand, keepalive,
+                                        max_queue_size)
         self.relays[tmp_relay.sock] = tmp_relay
 
     def add_auth_handler(self, handler):
