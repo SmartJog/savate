@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('httpkiller')
     handler = logging.FileHandler('/dev/stderr')
-    handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s(%(process)d): %(message)s"))
+    helpers.set_default_formatter(handler)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 

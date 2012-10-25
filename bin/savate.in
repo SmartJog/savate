@@ -26,9 +26,11 @@ with open(options.config_file) as conffile:
     conf = json.load(conffile)
 
 import logging
+from savate import helpers
+
 logger = logging.getLogger('savate')
 handler = logging.FileHandler(conf.get('log_file', options.log_file))
-handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s(%(process)d): %(message)s"))
+helpers.set_default_formatter(handler)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
