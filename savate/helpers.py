@@ -49,6 +49,9 @@ def find_signal_str(signum):
             return signal_string
     return ''
 
+def set_default_formatter(handler):
+    import logging
+    handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s(%(process)d): %(message)s"))
 
 class HTTPError(Exception):
     pass
