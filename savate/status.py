@@ -16,21 +16,7 @@ class BaseStatusClient(object):
         self.server_config = server_config
         self.config = config_dict
 
-    def get_status(self, sock, address, request_parser):
-        raise NotImplemented('Implement in subclass')
-
-
-class SimpleStatusClient(BaseStatusClient):
-
-    def get_status(self, sock, address, request_parser):
-        return HTTPEventHandler(self.server, sock, address, request_parser,
-                                HTTPResponse(200, b'OK', {b'Content-Type': 'text/plain'},
-                                pprint.pformat(self.server.sources)))
-
-
-class JSONStatusClient(BaseStatusClient):
-
-    def get_status(self, sock, address, request_parser):
+    def get_status_dict(self, address):
         sources_dict = {}
         total_clients_number = 0
 
@@ -50,7 +36,7 @@ class JSONStatusClient(BaseStatusClient):
         queue_sizes.sort()
         if not queue_sizes:
             queue_sizes = [-1]
-        status_dict = {
+        return {
             'total_clients_number': total_clients_number,
             'pid': os.getpid(),
             'max_buffer_queue_size': queue_sizes[-1],
@@ -60,6 +46,22 @@ class JSONStatusClient(BaseStatusClient):
             'sources': sources_dict,
             }
 
+    def get_status(self, sock, address, request_parser):
+        raise NotImplemented('Implement in subclass')
+
+
+class SimpleStatusClient(BaseStatusClient):
+
+    def get_status(self, sock, address, request_parser):
+        return HTTPEventHandler(self.server, sock, address, request_parser,
+                                HTTPResponse(200, b'OK', {b'Content-Type': 'text/plain'},
+                                pprint.pformat(self.server.sources)))
+
+
+class JSONStatusClient(BaseStatusClient):
+
+    def get_status(self, sock, address, request_parser):
+        status_dict = self.get_status_dict(address)
         return HTTPEventHandler(self.server, sock, address, request_parser,
                                 HTTPResponse(200, b'OK', {b'Content-Type': 'application/json'},
                                 json.dumps(status_dict, indent = 4) + '\n'))
