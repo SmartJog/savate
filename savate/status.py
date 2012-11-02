@@ -58,6 +58,40 @@ class SimpleStatusClient(BaseStatusClient):
                                 pprint.pformat(self.server.sources)))
 
 
+class HTMLStatusClient(BaseStatusClient):
+
+    HTML_TPL = '''<!doctype html><html><body>%s
+<p><img src="http://www.gnu.org/graphics/agplv3-155x51.png" alt="APGL" /></p>
+</body></html>'''
+
+    def get_status(self, sock, address, request_parser):
+        status_dict = self.get_status_dict(address)
+        s = '<pre>'
+        for k, v in status_dict.items():
+            if k == 'sources':
+                continue
+            s += '<b>%30s</b>: %s\n' % (k, v)
+        s += '</pre>'
+
+        s += '<h2>Sources</h2><ul>'
+        sources = status_dict.get('sources')
+        for src, info in sources.items():
+            s += '<dt>%s</dt>' % src
+            s += '<dd><ul>'
+            for addr, conns in info.items():
+                s += '<dt>%s (%d):</dt>' % (addr.split()[0], len(conns))
+                s += '<dd><ul>'
+                for conn in conns.values():
+                    s += '<li>%s</li>' % conn
+                s += '</ul></dd>'
+            s += '</ul></dd>'
+        s += '</ul>'
+
+        return HTTPEventHandler(self.server, sock, address, request_parser,
+                                HTTPResponse(200, b'OK', {b'Content-Type': 'text/html'},
+                                self.HTML_TPL % s))
+
+
 class JSONStatusClient(BaseStatusClient):
 
     def get_status(self, sock, address, request_parser):
