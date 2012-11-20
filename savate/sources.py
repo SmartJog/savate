@@ -51,8 +51,8 @@ class StreamSource(looping.BaseIOEventHandler):
         elif self.on_demand != self.STOPPED:
             return
 
-        self.server.logger.info('Activate ondemand for source %s: %s',
-                                self.path, self.address)
+        self.server.logger.info('Activate ondemand for source %s: %s:%d',
+                                self.path, self.address[0], self.address[1])
         self.on_demand = self.CONNECTING
         del self.server.relays[self.sock]
         self.relay.connect()
@@ -63,8 +63,8 @@ class StreamSource(looping.BaseIOEventHandler):
         subclasses to clear buffers for examples.
 
         """
-        self.server.logger.info('Desactivate ondemand for source %s: %s',
-                                self.path, self.address)
+        self.server.logger.info('Desactivate ondemand for source %s: %s:%d',
+                                self.path, self.address[0], self.address[1])
         self.on_demand = self.STOPPED
         self.server.loop.unregister(self)
         self.server.remove_inactivity_timeout(self)
@@ -78,10 +78,10 @@ class StreamSource(looping.BaseIOEventHandler):
         self.server.loop.register(self, looping.POLLIN)
 
     def __str__(self):
-        return '<%s for %s, %s, %s>' % (
+        return '<%s for %s, %s:%d, %s>' % (
             self.__class__.__name__,
             self.path,
-            self.address,
+            self.address[0], self.address[1],
             self.content_type,
             )
 

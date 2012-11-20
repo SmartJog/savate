@@ -68,7 +68,7 @@ with daemon_context:
     server.create_socket()
     server.create_loop()
 
-    logger.info('Serving on %s', server.address)
+    logger.info('Serving on %s:%d', server.address[0], server.address[1])
 
     server.config.configure()
     logger.info('Done setting up relays')

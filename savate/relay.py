@@ -192,30 +192,29 @@ class HTTPRelay(Relay):
                     # EAGAIN, we'll come back later
                     break
                 elif tmp_buffer == b'':
-                    raise HTTPError('Unexpected end of stream from %s, %s' %
-                                    (self.url,
-                                    (self.sock, self.address)))
+                    raise HTTPError('Unexpected end of stream from %s (%s:d)' %
+                                    (self.url, self.address[0], self.address[1]))
                 self.response_buffer = self.response_buffer + tmp_buffer
                 self.response_size += len(tmp_buffer)
                 self.response_parser.execute(self.response_buffer)
                 if self.response_parser.has_error():
-                    raise HTTPParseError('Invalid HTTP response from %s, %s' %
-                                         (self.sock, self.address))
+                    raise HTTPParseError('Invalid HTTP response from %s (%s:%d)' %
+                                         (self.url, self.address[0], self.address[1]))
                 elif self.response_parser.is_finished():
                     # Transform this into the appropriate handler
                     self.transform_response()
                     break
                 elif self.response_size >= self.RESPONSE_MAX_SIZE:
-                    raise HTTPParseError('Oversized HTTP response from %s, %s' %
-                                         (self.sock, self.address))
+                    raise HTTPParseError('Oversized HTTP response from %s (%s:%d)' %
+                                         (self.url, self.address[0], self.address[1]))
 
     def transform_response(self):
         if self.response_parser.status_code not in (200,):
-            self.server.logger.error('Unexpected response %d %s from %s, %s',
+            self.server.logger.error('Unexpected response %d %s from %s (%s:%d)',
                                      self.response_parser.status_code,
                                      self.response_parser.reason_phrase,
                                      self.url,
-                                     (self.sock, self.address))
+                                     self.address[0], self.address[1])
             self.close()
             return
 

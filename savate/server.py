@@ -57,21 +57,21 @@ class HTTPRequest(looping.BaseIOEventHandler):
                 # EAGAIN, we'll come back later
                 break
             elif tmp_buffer == b'':
-                raise HTTPError('Unexpected end of stream from %s, %s,' %
-                                (self.sock, self.address))
+                raise HTTPError('Unexpected end of stream from %s:%d' %
+                                (self.address[0], self.address[1]))
             self.request_buffer = self.request_buffer + tmp_buffer
             self.request_size += len(tmp_buffer)
             self.request_parser.execute(self.request_buffer)
             if self.request_parser.has_error():
-                raise HTTPParseError('Invalid HTTP request from %s, %s' %
-                                     (self.sock, self.address))
+                raise HTTPParseError('Invalid HTTP request from %s:%d' %
+                                     (self.address[0], self.address[1]))
             elif self.request_parser.is_finished():
                 # Transform this into the appropriate handler
                 self.transform_request()
                 break
             elif self.request_size >= self.REQUEST_MAX_SIZE:
-                raise HTTPParseError('Oversized HTTP request from %s, %s' %
-                                     (self.sock, self.address))
+                raise HTTPParseError('Oversized HTTP request from %s:%d' %
+                                     (self.address[0], self.address[1]))
 
     def transform_request(self):
         loop = self.server.loop
@@ -266,8 +266,9 @@ class TCPServer(looping.BaseIOEventHandler):
 
     def handle_new_incoming(self):
         client_socket, client_address = self.sock.accept()
-        self.logger.info('New client <fd:%d, id:0x%s>, %s',
-                         client_socket.fileno(), id(client_socket), client_address)
+        self.logger.info('New client %s:%d <fd:%d, id:0x%s>',
+                         client_address[0], client_address[1],
+                         client_socket.fileno(), id(client_socket))
         new_handler = HTTPRequest(self, client_socket, client_address)
         self.reset_inactivity_timeout(new_handler)
 
@@ -314,8 +315,9 @@ class TCPServer(looping.BaseIOEventHandler):
         self.register_source(source)
 
     def register_source(self, source):
-        self.logger.info('New source (%s) for %s: %s',
-                         source.__class__.__name__, source.path, source.address)
+        self.logger.info('New source (%s) for %s: %s:%d',
+                         source.__class__.__name__, source.path,
+                         source.address[0], source.address[1])
         self.sources.setdefault(source.path, {})[source] = {'source': source,
                                                             'clients': {}}
         self.reset_inactivity_timeout(source)
@@ -404,9 +406,9 @@ class TCPServer(looping.BaseIOEventHandler):
         del self.sources[source.path][source]['clients'][client.fileno()]
         # FIXME: what to do with this one ?
         self.logger.info(
-            'Dropping client for path %s, %s',
+            'Dropping client %s:%d for path %s',
+            client.address[0], client.address[1],
             source.path,
-            client.address,
         )
 
     def all_clients(self):

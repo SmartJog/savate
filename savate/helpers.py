@@ -113,10 +113,10 @@ class HTTPEventHandler(BaseIOEventHandler):
             self.server.logger.error('%s: unexpected eventmask %d (%s)', self, eventmask, event_mask_str(eventmask))
 
     def __str__(self):
-        return '<%s for %s, %s>' % (
+        return '<%s for %s, %s:%d>' % (
             self.__class__.__name__,
             self.request_parser.request_path,
-            self.address,
+            self.address[0], self.address[1],
             )
 
 
